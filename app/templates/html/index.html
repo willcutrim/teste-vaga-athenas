@@ -1,0 +1,278 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Gerenciamento de Pessoas{% endblock %}
+
+{% block content %}
+
+    <div class="container mt-4">
+        <div class="input-group mb-3">
+            <input type="text" class="form-control col-3" id="termoBusca" placeholder="Digite o CPF/NOME para buscar">
+            <button class="btn btn-primary" type="button" id="btnBuscar" onclick="buscarPessoa()">Buscar</button>
+        </div>
+        <div class="card mt-3">
+            <div class="card-body">
+                <table class="table table-striped">
+                    <thead>
+                        <tr class="table-secondary">
+                            <th>Nome</th>
+                            <th>Data de Nasc.</th>
+                            <th>CPF</th>
+                            <th>Sexo</th>
+                            <th>Altura</th>
+                            <th>Peso</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    
+                    <tbody id="tabelaUsuarios">
+                        
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <button type="button" class="btn btn-primary me-auto mt-1" data-bs-toggle="modal" data-bs-target="#exampleModal">
+            Adicionar pessoa
+        </button>
+    </div>
+
+
+
+    <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h1 class="modal-title fs-5">Gerenciamento de Pessoas</h1>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="card mt-3">
+                    <div class="card-body">
+                        <form id="pessoaForm">
+                            <div class="mb-3">
+                                <label for="nome" class="form-label">Nome:</label>
+                                <input type="text" class="form-control" id="nome" name="nome" placeholder="Nome" aria-label="Nome" aria-describedby="addon-wrapping">
+
+                            </div>
+            
+                            <div class="mb-3">
+                                <label for="data_nasc" class="form-label">Data de Nascimento:</label>
+                                <input type="date" class="form-control" id="data_nasc" name="data_nasc" required>
+                            </div>
+            
+                            <div class="mb-3">
+                                <label for="cpf" class="form-label">CPF:</label>
+                                <input type="text" class="form-control" id="cpf" name="cpf" required>
+                            </div>
+            
+                            <div class="mb-3">
+                                <label for="sexo" class="form-label">Sexo:</label>
+                                <select class="form-select" id="sexo" name="sexo" required>
+                                    <option value="M">Masculino</option>
+                                    <option value="F">Feminino</option>
+                                </select>
+                            </div>
+            
+                            <div class="mb-3">
+                                <label for="altura" class="form-label">Altura:</label>
+                                <input type="number" class="form-control" id="altura" name="altura" step="0.01" required>
+                            </div>
+            
+                            <div class="mb-3">
+                                <label for="peso" class="form-label">Peso:</label>
+                                <input type="number" class="form-control" id="peso" name="peso" step="0.01" required>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary" id="incluir" onclick="criarPessoa()">Incluir</button>
+                <button type="button" class="btn btn-primary" id="atualizar" style="display: none;">Atualizar</button>
+            </div>
+        </div>
+        </div>
+    </div>
+
+    <script>
+        
+        function criarPessoa() {
+            var data = {
+                nome: $('#nome').val(),
+                data_nasc: $('#data_nasc').val(),
+                cpf: $('#cpf').val(),
+                sexo: $('#sexo').val(),
+                altura: $('#altura').val(),
+                peso: $('#peso').val()
+            };
+
+            $.ajax({
+                url: 'incluir/',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify(data),
+                success: function(response) {
+                    console.log(response);
+                    
+                },
+                error: function(xhr, status, error) {
+                    console.error(xhr.responseText);
+                }
+            });
+        }
+
+        function buscarPessoa(){
+            var termoBusca = $('#termoBusca').val();
+                
+            $.ajax({
+                url: '/obter_pessoa/',
+                method: 'GET',
+                data: { data: termoBusca }, 
+                success: function(response) {
+                    if (!response) {
+                        $('#tabelaUsuarios').empty();
+                        alert('Não encontrado');
+                    } else {
+                        $('#tabelaUsuarios').empty();
+                
+                        var usuario = response;
+                        var uniqueId = Date.now();
+
+                        var linhaTabela = '<tr id="' + uniqueId + '">' +
+                            '<td>' + usuario.nome + '</td>' +
+                            '<td>' + usuario.data_formatada + '</td>' +
+                            '<td>' + usuario.cpf_formatado + '</td>' +
+                            '<td>' + usuario.sexo_formatado + '</td>' +
+                            '<td>' + usuario.altura_formatada + '</td>' +
+                            '<td>' + usuario.peso_formatado + '</td>' +
+                            '<td>' + '<button class="btn btn-danger" type="button" onclick="deletarPessoa(' + usuario.id + ', ' + uniqueId + ')">Excluir</button> ' +
+                                '<button class="btn btn-warning" type="button" onclick="preencherFormulario(' + usuario.cpf + ')">Atualizar</button>' + ' <button class="btn btn-primary" type="button" onclick="calcularPesoIdeal(' + usuario.id + ')">Calcular</button>' + '</td>' +
+                            '</tr>';
+                        $('#tabelaUsuarios').append(linhaTabela);
+                        
+                    }
+                },                
+                error: function(xhr, status, error) {
+                   
+                    console.error(xhr.responseText);
+                }
+            });
+        }
+        
+        function deletarPessoa(pessoaId, uniqueId) {
+            // URL da API para excluir uma pessoa
+            const url = `/excluir_pessoa/${pessoaId}`;
+        
+            // Configuração do Ajax
+            $.ajax({
+                url: url,
+                type: 'DELETE',
+                success: function(response) {
+                    // Pessoa excluída com sucesso
+                    alert('Pessoa excluída com sucesso!');
+                    // Remover a linha correspondente à pessoa na tabela
+                    $('#' + uniqueId).remove();
+                },
+                error: function(xhr, status, error) {
+                    // Se ocorrer um erro ao enviar a solicitação, mostrar uma mensagem de erro
+                    console.error('Erro ao excluir pessoa:', error);
+                    alert('Erro ao excluir pessoa.');
+                }
+            });
+        }
+        
+        function calcularPesoIdeal(pessoaId) {
+            // URL da API para calcular o peso ideal
+            const url = `/calcular_peso_ideal/${pessoaId}`;
+        
+            // Configuração do Ajax
+            $.ajax({
+                url: url,
+                type: 'GET',
+                success: function(response) {
+                    // Peso ideal calculado com sucesso
+                    alert(`Peso ideal calculado de ${response.nome}:  ${response.peso_ideal}`);
+                },
+                error: function(xhr, status, error) {
+                    // Se ocorrer um erro ao enviar a solicitação, mostrar uma mensagem de erro
+                    console.error('Erro ao calcular peso ideal:', error);
+                    alert('Erro ao calcular peso ideal.');
+                }
+            });
+        }
+        
+        function preencherFormulario(cpf) {
+            
+            
+            // Configuração do Ajax
+            $.ajax({
+                url: '/obter_pessoa/',
+                data: { data: cpf },
+                type: 'GET',
+                success: function(response) {
+                    // Preencher os campos do formulário com os detalhes da pessoa
+                    $('#nome').val(response.nome);
+                    $('#data_nasc').val(response.data_nasc);
+                    $('#cpf').val(response.cpf);
+                    $('#sexo').val(response.sexo);
+                    $('#altura').val(response.altura_formatada);
+                    $('#peso').val(response.peso_formatado);
+    
+                   // Exibir o botão de atualizar e ocultar o botão de incluir
+                    $('#incluir').hide();
+                    $('#atualizar').show();
+
+                    $('#atualizar').text('Atualizar').off('click').on('click', function() {
+                        atualizarPessoa(response.id);
+                    });
+                   
+                    // Abrir o modal
+                    $('#exampleModal').modal('show');
+                },
+                error: function(xhr, status, error) {
+                    // Se ocorrer um erro ao obter os detalhes da pessoa, mostrar uma mensagem de erro
+                    console.error('Erro ao obter os detalhes da pessoa:', error);
+                    alert('Erro ao obter os detalhes da pessoa.');
+                }
+            });
+        }
+
+        function atualizarPessoa(pessoaId) {
+            // Dados do formulário
+            var data = {
+                nome: $('#nome').val(),
+                data_nasc: $('#data_nasc').val(),
+                cpf: $('#cpf').val(),
+                sexo: $('#sexo').val(),
+                altura: $('#altura').val(),
+                peso: $('#peso').val()
+            };
+        
+            
+            // Configuração do Ajax
+            $.ajax({
+                url: `/atualizar_pessoa/${pessoaId}`,
+                type: 'PUT',
+                contentType: 'application/json',
+                data: JSON.stringify(data),
+                success: function(response) {
+                    // Pessoa atualizada com sucesso
+                    alert('Pessoa atualizada com sucesso!');
+                    // Fechar o modal
+                    $('#exampleModal').modal('hide');
+                    // Limpar o formulário
+                    $('#pessoaForm')[0].reset();
+                    // Atualizar a lista de pessoas na tabela
+                    atualizarListaPessoas();
+                },
+                error: function(xhr, status, error) {
+                    // Se ocorrer um erro ao atualizar a pessoa, mostrar uma mensagem de erro
+                    console.error('Erro ao atualizar pessoa:', error);
+                    alert('Erro ao atualizar pessoa.');
+                }
+            });
+        }
+        
+    </script>
+
+{% endblock content%}
