@@ -21,4 +21,34 @@ class PessoaService:
             peso=peso
         )
 
+    
+    def excluir(self, pessoa_id):
+        pessoa = Pessoa.objects.get(id=pessoa_id)
+        pessoa.delete()
+
+
+
+
+    def atualizar(self, pessoa_id, data):
+        try:
+            pessoa = Pessoa.objects.get(id=pessoa_id)
+        except Pessoa.DoesNotExist:
+            raise ValueError("Pessoa não encontrada")
+
+        pessoa.nome = data.get('nome', pessoa.nome)
+        pessoa.data_nasc = data.get('data_nasc', pessoa.data_nasc)
+        pessoa.cpf = data.get('cpf', pessoa.cpf)
+        pessoa.sexo = data.get('sexo', pessoa.sexo)
+        pessoa.altura = data.get('altura', pessoa.altura)
+        pessoa.peso = data.get('peso', pessoa.peso)
+
+        # Salva as alterações no banco de dados
+        pessoa.save()
+
+    
+    def obter_pessoa_por_id(self, pessoa_id):
+        try:
+            return Pessoa.objects.get(id=pessoa_id)
+        except Pessoa.DoesNotExist:
+            raise ValueError("Pessoa não encontrada")
 

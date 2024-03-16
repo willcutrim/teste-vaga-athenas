@@ -64,47 +64,38 @@ def obter_pessoa(request):
 
 @api_view(['DELETE'])
 def excluir_pessoa(request, pessoa_id):
-    try:
-        pessoa = Pessoa.objects.get(pk=pessoa_id)
-    except Pessoa.DoesNotExist:
-        return Response({"error": "Pessoa não encontrada"}, status=status.HTTP_404_NOT_FOUND)
+    pessoa_service = PessoaService()
 
-    pessoa.delete()
+    pessoa_service.excluir(pessoa_id)
     return Response({"message": "Pessoa excluída com sucesso"}, status=status.HTTP_204_NO_CONTENT)
+
 
 
 @api_view(['PUT'])
 def atualizar_pessoa(request, pessoa_id):
-    try:
-        pessoa = Pessoa.objects.get(pk=pessoa_id)
-    except Pessoa.DoesNotExist:
-        return Response({"error": "Pessoa não encontrada"}, status=status.HTTP_404_NOT_FOUND)
+    pessoa_service = PessoaService()
 
-    serializer = PessoaSerializer(pessoa, data=request.data)
-    
-    if serializer.is_valid():
-        serializer.save()
-        return Response(serializer.data)
-    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    try:
+        pessoa_service.atualizar(pessoa_id, request.data)
+        return Response({"success": "Pessoa atualizada com sucesso"}, status=status.HTTP_200_OK)
+    except ValueError as e:
+        return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
 
 @api_view(['GET'])
 def calcular_peso_ideal(request, pessoa_id):
-    
-    try:
-        pessoa = Pessoa.objects.get(id=pessoa_id)
-        
-    except Pessoa.DoesNotExist:
-        return Response({"error": "Pessoa não encontrada"}, status=status.HTTP_404_NOT_FOUND)
+    pessoa_service = PessoaService()
+
+    pessoa = pessoa_service.obter_pessoa_por_id(pessoa_id)
 
     altura = pessoa.altura
-    peso = pessoa.peso
+    # peso = pessoa.peso
     sexo = pessoa.sexo
     
     if sexo == 'M':
-        peso_ideal = round((peso * altura) - 58, 2)
+        peso_ideal = round((72.7 * altura) - 58, 2)
     elif sexo == 'F':
-        peso_ideal = round((peso * altura) - 44.7, 2)
+        peso_ideal = round((62.1 * altura) - 44.7, 2)
     else:
         return Response({"error": "Sexo inválido"}, status=status.HTTP_400_BAD_REQUEST)
 
