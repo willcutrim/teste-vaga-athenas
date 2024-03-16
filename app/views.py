@@ -53,7 +53,6 @@ def obter_pessoa(request):
         Q(cpf=termo_busca)
     )
     
-    # Verificar se foi encontrada pelo menos uma pessoa
     if pessoas.exists():
         # Serializar cada pessoa individualmente e armazenar os resultados em uma lista
         serializer = PessoaSerializer(pessoas, many=True)

@@ -112,11 +112,11 @@
                 contentType: 'application/json',
                 data: JSON.stringify(data),
                 success: function(response) {
-                    console.log(response);
-                    
+                    alert('Pessoa adicionada com sucesso!');
+                    location.reload();
                 },
                 error: function(xhr, status, error) {
-                    console.error(xhr.responseText);
+                    alert('error');
                 }
             });
         }
@@ -160,21 +160,17 @@
         }
         
         function deletarPessoa(pessoaId, uniqueId) {
-            // URL da API para excluir uma pessoa
             const url = `/excluir_pessoa/${pessoaId}`;
         
-            // Configuração do Ajax
             $.ajax({
                 url: url,
                 type: 'DELETE',
                 success: function(response) {
-                    // Pessoa excluída com sucesso
                     alert('Pessoa excluída com sucesso!');
                     // Remover a linha correspondente à pessoa na tabela
                     $('#' + uniqueId).remove();
                 },
                 error: function(xhr, status, error) {
-                    // Se ocorrer um erro ao enviar a solicitação, mostrar uma mensagem de erro
                     console.error('Erro ao excluir pessoa:', error);
                     alert('Erro ao excluir pessoa.');
                 }
@@ -238,7 +234,6 @@
         }
 
         function atualizarPessoa(pessoaId) {
-            // Dados do formulário
             var data = {
                 nome: $('#nome').val(),
                 data_nasc: $('#data_nasc').val(),
@@ -249,24 +244,23 @@
             };
         
             
-            // Configuração do Ajax
+            // Configuração do Ajax :)
             $.ajax({
                 url: `/atualizar_pessoa/${pessoaId}`,
                 type: 'PUT',
                 contentType: 'application/json',
                 data: JSON.stringify(data),
                 success: function(response) {
-                    // Pessoa atualizada com sucesso
+                    
                     alert('Pessoa atualizada com sucesso!');
-                    // Fechar o modal
+                    
                     $('#exampleModal').modal('hide');
-                    // Limpar o formulário
+                    
                     $('#pessoaForm')[0].reset();
-                    // Atualizar a lista de pessoas na tabela
+                    
                     atualizarListaPessoas();
                 },
                 error: function(xhr, status, error) {
-                    // Se ocorrer um erro ao atualizar a pessoa, mostrar uma mensagem de erro
                     console.error('Erro ao atualizar pessoa:', error);
                     alert('Erro ao atualizar pessoa.');
                 }
