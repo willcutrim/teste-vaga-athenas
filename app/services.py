@@ -48,7 +48,7 @@ class PessoaService:
     
     def obter_pessoa_por_id(self, pessoa_id):
         try:
-            return Pessoa.objects.get(id=pessoa_id)
+            return Pessoa.objects.filter(id=pessoa_id).first()
         except Pessoa.DoesNotExist:
-            raise ValueError("Pessoa não encontrada")
+            return ValueError("Pessoa não encontrada")
 

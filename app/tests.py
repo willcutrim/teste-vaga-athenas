@@ -11,15 +11,16 @@ class TestViews(TestCase):
         self.incluir_url = '/incluir/'
         self.listar_pessoas_url = '/listar_pessoas/'
         self.obter_pessoa_url = '/obter_pessoa/'
-        self.excluir_pessoa_url = '/excluir_pessoa/{}/'
-        self.atualizar_pessoa_url = '/atualizar_pessoa/{}/'
-        self.calcular_peso_ideal_url = '/calcular_peso_ideal/{}/'
+        self.excluir_pessoa_url = '/excluir_pessoa/{}'
+        self.atualizar_pessoa_url = '/atualizar_pessoa/{}'
+        self.calcular_peso_ideal_url = '/calcular_peso_ideal/{}'
         self.pessoa_data = {
             'nome': 'Teste',
-            'cpf': '12345678901',
+            'data_nasc': '1990-01-01',
+            'cpf': '32165498700',
+            'sexo': 'M',
             'altura': 1.75,
-            'peso': 70,
-            'sexo': 'M'
+            'peso': 70
         }
         self.pessoa = Pessoa.objects.create(**self.pessoa_data)
 

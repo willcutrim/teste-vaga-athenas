@@ -18,21 +18,16 @@ def index(request):
 
 @api_view(['POST'])
 def incluir(request):
-    if request.method == 'POST':
-        data = request.data
+    data = request.data
+    pessoa_service = PessoaService()
 
-        # Verificar se o CPF já existe
-        cpf = data.get('cpf')
-        if Pessoa.objects.filter(cpf=cpf).exists():
-            return Response({"error": "CPF já cadastrado"}, status=status.HTTP_400_BAD_REQUEST)
+    cpf = data.get('cpf')
+    if Pessoa.objects.filter(cpf=cpf).exists():
+        return Response({"error": "CPF já cadastrado"}, status=status.HTTP_400_BAD_REQUEST)
 
-        # Se o CPF não existir, prosseguir com a inclusão
-        pessoa_service = PessoaService()
-        pessoa_service.incluir(data)
-        return Response({"message": "Pessoa incluída com sucesso"}, status=status.HTTP_201_CREATED)
-    else:
-        return Response({"error": "Método não permitido"}, status=status.HTTP_405_METHOD_NOT_ALLOWED)
-
+    pessoa_service.incluir(data)
+    return Response({"message": "Pessoa incluída com sucesso"}, status=status.HTTP_201_CREATED)
+    
 
 @api_view(['GET'])
 def listar_pessoas(request):
@@ -87,7 +82,10 @@ def calcular_peso_ideal(request, pessoa_id):
     pessoa_service = PessoaService()
 
     pessoa = pessoa_service.obter_pessoa_por_id(pessoa_id)
-
+    print(pessoa)
+    if not pessoa:
+        return Response({"error": "Pessoa não encontrada"}, status=status.HTTP_404_NOT_FOUND)
+    
     altura = pessoa.altura
     # peso = pessoa.peso
     sexo = pessoa.sexo
